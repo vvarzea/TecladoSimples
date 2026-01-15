@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>As Mãos Mágicas do Teclado</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Comic+Neue:wght@700&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --offset-linha2: 28px;
+}
+
+/* BASE */
+body{
+  font-family:"Comic Neue","Arial Rounded MT Bold",Arial,sans-serif;
+  background:linear-gradient(180deg,#f0f6ff 0%,#ffffff 60%);
+  text-align:center;
+  margin:0;
+  padding:20px;
+}
+
+/* TÍTULO */
+h1{
+  font-size:44px;
+  margin:0 0 6px;
+  background:linear-gradient(90deg,#1abc9c,#3498db,#9b59b6);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* SUBTÍTULO */
+.prof{
+  font-size:22px;
+  font-weight:bold;
+  color:#555;
+  margin-bottom:22px;
+}
+
+.nivel{
+  font-size:22px;
+  font-weight:bold;
+  margin-bottom:8px;
+  color:#2c3e50;
+}
+
+/* PROGRESSO */
+.progressBox{
+  width:300px;
+  height:16px;
+  background:#e0e0e0;
+  border-radius:12px;
+  margin:8px auto 18px;
+  overflow:hidden;
+}
+.progress{
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#2ecc71,#27ae60);
+  transition:width .3s;
+}
+
+/* LETRA */
+.letraBox{
+  background:white;
+  border-radius:24px;
+  padding:22px 55px;
+  display:inline-block;
+  box-shadow:0 8px 18px rgba(0,0,0,0.15);
+  margin-bottom:12px;
+}
+.letra{
+  font-size:96px;
+  font-weight:bold;
+}
+
+/* CORES POR DEDO */
+.mindinho  { background:#e74c3c; color:white; }
+.anelar    { background:#f39c12; color:white; }
+.medio     { background:#2ecc71; color:white; }
+.indicador { background:#3498db; color:white; }
+.polegar   { background:#8b5cf6; color:white; }
+
+.piscar{
+  animation:pisca 1s infinite;
+  opacity:1!important;
+}
+@keyframes pisca{
+  0%{transform:scale(1)}
+  50%{transform:scale(1.2)}
+  100%{transform:scale(1)}
+}
+
+/* MÃOS */
+.maos{
+  display:flex;
+  justify-content:center;
+  gap:40px;
+  margin:18px 0 10px;
+  flex-wrap:wrap;
+}
+.maoBox{
+  background:white;
+  border-radius:20px;
+  padding:14px 18px;
+  box-shadow:0 4px 12px rgba(0,0,0,.1);
+}
+.dedo{
+  padding:8px 16px;
+  margin:4px 0;
+  border-radius:14px;
+  opacity:.3;
+}
+
+/* TECLADO */
+.teclado{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin:18px auto 10px;
+  user-select:none;
+}
+.linha{display:flex;gap:6px;margin:4px 0}
+.linha2{margin-left:var(--offset-linha2)}
+.linha3{position:relative;left:-50px}
+
+.tecla{
+  width:56px;
+  height:56px;
+  border-radius:14px;
+  font-size:22px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:bold;
+  opacity:.9;
+  box-shadow:inset 0 -4px 0 rgba(0,0,0,0.15);
+  cursor:pointer;
+}
+.tecla:active{transform:scale(0.96)}
+
+.tecla.piscar{
+  outline:4px solid #000;
+  outline-offset:-4px;
+}
+
+/* SPACE */
+.tecla.space{
+  width:340px;
+  font-size:18px;
+}
+
+/* INFO */
+.info{
+  font-size:22px;
+  margin-top:12px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🖐️ As Mãos Mágicas do Teclado</h1>
+<div class="prof">Professora: Vanda Várzea</div>
+
+<div class="nivel" id="nivel"></div>
+
+<div class="progressBox">
+  <div class="progress" id="progress"></div>
+</div>
+
+<div class="letraBox">
+  <div class="letra" id="letra">–</div>
+</div>
+
+<!-- MÃOS -->
+<div class="maos">
+  <div class="maoBox" id="maoEsq">
+    <div class="dedo mindinho">Mindinho</div>
+    <div class="dedo anelar">Anelar</div>
+    <div class="dedo medio">Médio</div>
+    <div class="dedo indicador">Indicador</div>
+    <div class="dedo polegar">Polegar</div>
+  </div>
+  <div class="maoBox" id="maoDir">
+    <div class="dedo indicador">Indicador</div>
+    <div class="dedo medio">Médio</div>
+    <div class="dedo anelar">Anelar</div>
+    <div class="dedo mindinho">Mindinho</div>
+    <div class="dedo polegar">Polegar</div>
+  </div>
+</div>
+
+<!-- TECLADO -->
+<div class="teclado">
+  <div class="linha" id="linha1"></div>
+  <div class="linha linha2" id="linha2"></div>
+  <div class="linha linha3" id="linha3"></div>
+  <div class="linha" id="linhaSpace"></div>
+</div>
+
+<div class="info" id="instrucao"></div>
+
+<script>
+/* ÁUDIO */
+let audioCtx=null, masterGain=null;
+function initAudio(){
+  if(audioCtx) return;
+  const AC=window.AudioContext||window.webkitAudioContext;
+  audioCtx=new AC();
+  masterGain=audioCtx.createGain();
+  masterGain.gain.value=0.15;
+  masterGain.connect(audioCtx.destination);
+}
+function resumeAudio(){ if(audioCtx&&audioCtx.state==="suspended") audioCtx.resume(); }
+function beep(f,d){
+  if(!audioCtx) return;
+  const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+  o.type="square"; o.frequency.value=f;
+  const t=audioCtx.currentTime;
+  g.gain.setValueAtTime(0.001,t);
+  g.gain.exponentialRampToValueAtTime(0.2,t+0.01);
+  g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g); g.connect(masterGain);
+  o.start(t); o.stop(t+d+0.02);
+}
+function somClique(){ resumeAudio(); beep(600,0.05); }
+function somCerto(){ resumeAudio(); beep(900,0.06); setTimeout(()=>beep(1200,0.08),60); }
+document.addEventListener("pointerdown",()=>{initAudio();resumeAudio();},{once:true});
+document.addEventListener("keydown",()=>{initAudio();resumeAudio();},{once:true});
+
+/* MAPAS */
+const mapa={
+ q:"mindinho",w:"anelar",e:"medio",r:"indicador",t:"indicador",
+ a:"mindinho",s:"anelar",d:"medio",f:"indicador",g:"indicador",
+ z:"mindinho",x:"anelar",c:"medio",v:"indicador",b:"indicador",
+ y:"indicador",u:"indicador",i:"medio",o:"anelar",p:"mindinho",
+ h:"indicador",j:"indicador",k:"medio",l:"anelar","ç":"mindinho",
+ n:"indicador",m:"medio",
+ " ":"polegar"
+};
+const mao={};
+Object.keys(mapa).forEach(k=>mao[k]=(k<"y"?"esquerda":"direita"));
+mao[" "]="direita";
+
+/* NÍVEIS (SPACE MISTURADO) */
+const niveis=[
+ {nome:"Nível 1 – Linha do meio", letras:["a","s","d","f","g","h","j","k","l","ç"]},
+ {nome:"Nível 2 – Linha de cima", letras:["q","w","e","r","t","y","u","i","o","p"]},
+ {nome:"Nível 3 – Linha de baixo", letras:["z","x","c","v","b","n","m"]},
+ {nome:"Nível 4 – Polegar (Space) + Indicadores", letras:[" ","f","j","a","l"]},
+ {nome:"🏆 Final – Todo o teclado + Space",
+  letras:["q","w","e","r","t","y","u","i","o","p",
+          "a","s","d","f","g","h","j","k","l","ç",
+          "z","x","c","v","b","n","m"," "]}
+];
+
+let nivel=0,pontos=0,total=10,actual="";
+
+/* TECLADO */
+function keyId(l){ return l===" "?"SPACE":l; }
+function criar(linha,l){
+ const d=document.createElement("div");
+ d.className="tecla "+mapa[l];
+ d.id="t_"+keyId(l);
+ d.textContent=l===" "?"SPACE":l.toUpperCase();
+ d.addEventListener("pointerdown",()=>processar(l));
+ document.getElementById(linha).appendChild(d);
+}
+function desenhar(){
+ ["linha1","linha2","linha3","linhaSpace"].forEach(id=>document.getElementById(id).innerHTML="");
+ ["q","w","e","r","t","y","u","i","o","p"].forEach(l=>criar("linha1",l));
+ ["a","s","d","f","g","h","j","k","l","ç"].forEach(l=>criar("linha2",l));
+ ["z","x","c","v","b","n","m"].forEach(l=>criar("linha3",l));
+ criar("linhaSpace"," ");
+ document.getElementById("t_SPACE").classList.add("space");
+}
+function limpar(){ document.querySelectorAll(".piscar").forEach(e=>e.classList.remove("piscar")); }
+
+function nova(){
+ limpar();
+ document.getElementById("nivel").innerText=niveis[nivel].nome;
+ document.getElementById("progress").style.width=(pontos/total*100)+"%";
+
+ const ultima=actual;
+ do{
+   actual=niveis[nivel].letras[Math.floor(Math.random()*niveis[nivel].letras.length)];
+ }while(actual===ultima && actual===" ");
+
+ document.getElementById("letra").innerText=actual===" "?"SPACE":actual.toUpperCase();
+ document.getElementById("t_"+keyId(actual)).classList.add("piscar");
+
+ const maoId=mao[actual]==="esquerda"?"maoEsq":"maoDir";
+ document.getElementById(maoId).querySelector("."+mapa[actual]).classList.add("piscar");
+
+ document.getElementById("instrucao").innerText=
+  "👉 Usa o dedo "+(mapa[actual]==="medio"?"Médio":mapa[actual])+" da mão "+mao[actual];
+}
+
+function processar(l){
+ somClique();
+ if(l===actual){
+  somCerto();
+  pontos++;
+  if(pontos>=total && nivel<niveis.length-1){ nivel++; pontos=0; }
+  nova();
+ }
+}
+
+document.addEventListener("keydown",e=>{
+ if(e.code==="Space") e.preventDefault();
+ const k=e.key===" "?" ":e.key.toLowerCase();
+ if(k===" "||/^[a-zç]$/.test(k)) processar(k);
+});
+
+/* START */
+desenhar();
+nova();
+</script>
+
+</body>
+</html>
+
